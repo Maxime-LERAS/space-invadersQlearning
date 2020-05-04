@@ -28,7 +28,7 @@ input_dim = 80 * 80
 gamma = 0.97
 update_frequency = 3
 learning_rate = 0.005
-resume = False
+resume = True
 render = True
 
 # Initialize
@@ -40,9 +40,8 @@ prev_x = None
 xs, dlogps, drs, probs = [], [], [], []
 running_reward = None
 reward_sum = 0
-episode_number = 2536
+episode_number = 40
 last_info = -1
-since_last_kill = -1
 nb_kills = 0
 
 train_X = []
@@ -123,26 +122,22 @@ while True:
     if last_info == -1:
         last_info = info['ale.lives']
     if last_info > info['ale.lives']:
-        reward = -5
+        reward = -100
         last_info = info['ale.lives']
         print("dead" + str(info['ale.lives']))
-    if reward == 1:
+    if reward >= 1:
+        reward = 15
+    if reward == 15:
         nb_kills += 1
-        since_last_kill = 0
+        # print(nb_kills)
         if nb_kills%5==0:
             reward += int(nb_kills/2)
-    if since_last_kill >= 0:
-        since_last_kill +=1
-    if 0 < since_last_kill < 100:
-        if since_last_kill % 10 == 0:
-            reward += 0.5
     reward_sum += reward
     drs.append(reward)
     if done:
         episode_number += 1
         last_info = -1
         nb_kills = 0
-        since_last_kill = -1
         epx = np.vstack(xs)
         epdlogp = np.vstack(dlogps)
         epr = np.vstack(drs)
