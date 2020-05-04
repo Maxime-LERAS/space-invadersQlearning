@@ -5,6 +5,7 @@ import argparse
 import glob
 import os
 import pickle
+import random
 import sys
 
 # import cv2
@@ -28,8 +29,9 @@ input_dim = 80 * 80
 gamma = 0.97
 update_frequency = 3
 learning_rate = 0.005
-resume = True
-render = True
+epsilon = 1
+resume = False
+render = False
 
 # Initialize
 env = gym.make("SpaceInvaders-v0")
@@ -40,7 +42,7 @@ prev_x = None
 xs, dlogps, drs, probs = [], [], [], []
 running_reward = None
 reward_sum = 0
-episode_number = 40
+episode_number = 0
 last_info = -1
 nb_kills = 0
 
@@ -70,6 +72,7 @@ def discount_rewards(r):
 
 # Define the main model (WIP)
 def learning_model(input_dim=80 * 80, model_type=1):
+    global epsilon
     model = Sequential()
     if model_type == 0:
         model.add(Reshape((1, 80, 80), input_shape=(input_dim,)))
@@ -89,6 +92,9 @@ def learning_model(input_dim=80 * 80, model_type=1):
     model.compile(loss='categorical_crossentropy', optimizer=opt)
     if resume == True:
         model.load_weights('space_model_checkpoint.h5')
+        f = open("epsilon.txt", "r")
+        epsilon = float(f.read())
+        f.close()
     return model
 
 
@@ -113,7 +119,13 @@ while True:
     xs.append(x)
     probs.append((model.predict(x.reshape([1, x.shape[0]]), batch_size=1).flatten()))
     aprob = aprob / np.sum(aprob)
-    action = np.random.choice(number_of_inputs, 1, p=aprob)[0]
+    # print("random" + str(np.random.choice(number_of_inputs)))
+    # print("pa random" + str(np.random.choice(number_of_inputs, 1, p=aprob)[0]))
+    if random.uniform(0, 1) < epsilon:
+        action = np.random.choice(number_of_inputs)
+    else:
+        action = np.random.choice(number_of_inputs, 1, p=aprob)[0]
+
     y = np.zeros([number_of_inputs])
     y[action] = 1
     # print action
@@ -159,6 +171,12 @@ while True:
             print('Training Snapshot:')
             print(y_train)
             model.train_on_batch(np.squeeze(np.vstack(train_X)), y_train)
+            if epsilon >= 0.1:
+                epsilon -= 0.01
+                f = open("epsilon.txt", "w")
+                f.write(str(epsilon))
+                f.close()
+
             # Clear the batch
             train_X = []
             train_y = []
