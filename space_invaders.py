@@ -7,7 +7,7 @@ import os
 import pickle
 import sys
 
-import cv2
+# import cv2
 import gym
 import imageio
 import matplotlib.pyplot as plt
@@ -26,10 +26,10 @@ from keras.optimizers import Adam, Adamax, RMSprop
 # Script Parameters
 input_dim = 80 * 80
 gamma = 0.97
-update_frequency = 1
+update_frequency = 3
 learning_rate = 0.005
 resume = False
-render = False
+render = True
 
 # Initialize
 env = gym.make("SpaceInvaders-v0")
@@ -40,7 +40,7 @@ prev_x = None
 xs, dlogps, drs, probs = [], [], [], []
 running_reward = None
 reward_sum = 0
-episode_number = 1653
+episode_number = 2536
 last_info = -1
 since_last_kill = -1
 nb_kills = 0
