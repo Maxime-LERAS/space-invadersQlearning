@@ -26,9 +26,9 @@ from keras.optimizers import Adam, Adamax, RMSprop
 
 # Script Parameters
 input_dim = 80 * 80
-gamma = 1
+gamma = 0.9
 update_frequency = 2
-learning_rate = 0.0003
+learning_rate = 0.002
 epsilon = 1
 resume = False
 render = False
@@ -51,6 +51,7 @@ train_y = []
 
 yplot = []
 y2plot = []
+y3plot = []
 
 
 def space_preprocess_screen(I):
@@ -156,7 +157,7 @@ while True:
         train_X.append(xs)
         train_y.append(epdlogp)
         xs, dlogps, drs = [], [], []
-
+        y3plot.append(epsilon)
         # Periodically update the model
         if episode_number % update_frequency == 0:
             y_train = probs + learning_rate * np.squeeze(np.vstack(train_y))  # Hacky WIP
@@ -183,6 +184,7 @@ while True:
         yplot.append(running_reward)
         y2plot.append(reward_sum)
 
+
         print('Environment reset imminent. Total Episode Reward: %f. Running Mean: %f' % (reward_sum, running_reward))
         reward_sum = 0
         observation = env.reset()
@@ -191,9 +193,51 @@ while True:
         print(('Jour %d du confinement : ' % episode_number) +
               ('Defeat!' if reward == -5 else 'VICTORY!'))
     if episode_number == 1000:
+        # https://cmdlinetips.com/2019/10/how-to-make-a-plot-with-two-different-y-axis-in-python-with-matplotlib/
         xplot = np.arange(0, len(yplot), 1)
-        plt.plot(xplot, yplot, label="running_mean")
-        plt.plot(xplot, y2plot, label="reward_sum")
-        plt.legend()
-        plt.savefig('plot.png')
+        # create figure and axis objects with subplots()
+        fig, ax = plt.subplots()
+        # make a plot
+        ax.plot(xplot, yplot, color="red", marker="o")
+        # set x-axis label
+        ax.set_xlabel("episodes", fontsize=14)
+        # set y-axis label
+        ax.set_ylabel("running_mean", color="red", fontsize=14)
+        # twin object for two different y-axis on the sample plot
+        ax2 = ax.twinx()
+        # make a plot with different y-axis using second axis object
+        ax2.plot(xplot, y3plot, color="blue", marker="o")
+        ax2.set_ylabel("epsilon", color="blue", fontsize=14)
+        # save the plot as a file
+        fig.savefig('runnning_mean'+str(gamma)+ '.jpg',
+                    format='jpeg',
+                    dpi=100,
+                    bbox_inches='tight')
+        plt.close()
+
+        #plt.plot(xplot, yplot, label="running_mean")
+        #plt.legend()
+        #plt.savefig('mean' + str(gamma) + '.png')
+        fig, ax = plt.subplots()
+        # make a plot
+        ax.plot(xplot, y2plot, color="red", marker="o")
+        # set x-axis label
+        ax.set_xlabel("episodes", fontsize=14)
+        # set y-axis label
+        ax.set_ylabel("reward_sum", color="red", fontsize=14)
+        # twin object for two different y-axis on the sample plot
+        ax2 = ax.twinx()
+        # make a plot with different y-axis using second axis object
+        ax2.plot(xplot, y3plot, color="blue", marker="o")
+        ax2.set_ylabel("epsilon", color="blue", fontsize=14)
+        # save the plot as a file
+        fig.savefig('episode_reward' + str(gamma) + '.jpg',
+                    format='jpeg',
+                    dpi=100,
+                    bbox_inches='tight')
+        plt.close()
+        # plt.close()
+        # plt.plot(xplot, y2plot, label="reward_sum")
+        # plt.legend()
+        # plt.savefig('episodes'+str(gamma)+'.png')
         sys.exit()
