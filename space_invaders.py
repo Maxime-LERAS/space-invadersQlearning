@@ -198,7 +198,7 @@ while True:
         # create figure and axis objects with subplots()
         fig, ax = plt.subplots()
         # make a plot
-        ax.plot(xplot, yplot, color="red", marker="o")
+        ax.plot(xplot, yplot, color="red")
         # set x-axis label
         ax.set_xlabel("episodes", fontsize=14)
         # set y-axis label
@@ -206,7 +206,7 @@ while True:
         # twin object for two different y-axis on the sample plot
         ax2 = ax.twinx()
         # make a plot with different y-axis using second axis object
-        ax2.plot(xplot, y3plot, color="blue", marker="o")
+        ax2.plot(xplot, y3plot, color="blue")
         ax2.set_ylabel("epsilon", color="blue", fontsize=14)
         # save the plot as a file
         fig.savefig('runnning_mean'+str(gamma)+ '.jpg',
@@ -220,7 +220,7 @@ while True:
         #plt.savefig('mean' + str(gamma) + '.png')
         fig, ax = plt.subplots()
         # make a plot
-        ax.plot(xplot, y2plot, color="red", marker="o")
+        ax.plot(xplot, y2plot, color="red")
         # set x-axis label
         ax.set_xlabel("episodes", fontsize=14)
         # set y-axis label
@@ -228,7 +228,7 @@ while True:
         # twin object for two different y-axis on the sample plot
         ax2 = ax.twinx()
         # make a plot with different y-axis using second axis object
-        ax2.plot(xplot, y3plot, color="blue", marker="o")
+        ax2.plot(xplot, y3plot, color="blue")
         ax2.set_ylabel("epsilon", color="blue", fontsize=14)
         # save the plot as a file
         fig.savefig('episode_reward' + str(gamma) + '.jpg',
