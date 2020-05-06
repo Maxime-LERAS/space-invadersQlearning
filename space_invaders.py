@@ -26,9 +26,9 @@ from keras.optimizers import Adam, Adamax, RMSprop
 
 # Script Parameters
 input_dim = 80 * 80
-gamma = 0.97
-update_frequency = 1
-learning_rate = 0.005
+gamma = 1
+update_frequency = 2
+learning_rate = 0.0003
 epsilon = 1
 resume = False
 render = False
@@ -50,6 +50,7 @@ train_X = []
 train_y = []
 
 yplot = []
+y2plot = []
 
 
 def space_preprocess_screen(I):
@@ -86,9 +87,8 @@ def learning_model(input_dim=80 * 80, model_type=1):
         model.add(Reshape((1, 80, 80), input_shape=(input_dim,)))
         model.add(Convolution2D(32, (8, 8), border_mode='same', activation='relu', init='he_uniform'))
         model.add(Convolution2D(64, (4, 4), border_mode='same', activation='relu', init='he_uniform'))
-        model.add(Convolution2D(64, (3, 3), border_mode='same', activation='relu', init='he_uniform'))
         model.add(Flatten())
-        model.add(Dense(512, activation='relu', init='he_uniform'))
+        model.add(Dense(128, activation='relu', init='he_uniform'))
         model.add(Dense(number_of_inputs, activation='softmax'))
         opt = Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=opt)
@@ -167,7 +167,7 @@ while True:
             print(y_train)
             model.train_on_batch(np.squeeze(np.vstack(train_X)), y_train)
             if epsilon >= 0.1:
-                epsilon -= 0.01
+                epsilon -= 0.05
                 f = open("epsilon.txt", "w")
                 f.write(str(epsilon))
                 f.close()
@@ -181,9 +181,8 @@ while True:
         # Reset the current environment nad print the current results
         running_reward = reward_sum if running_reward is None else running_reward * gamma + reward_sum * (1 - gamma)
         yplot.append(running_reward)
-        xplot = np.arange(0, len(yplot), 1)
-        plt.plot(xplot, yplot)
-        plt.savefig('running_mean_plot.png')
+        y2plot.append(reward_sum)
+
         print('Environment reset imminent. Total Episode Reward: %f. Running Mean: %f' % (reward_sum, running_reward))
         reward_sum = 0
         observation = env.reset()
@@ -191,3 +190,10 @@ while True:
     if reward != 0:
         print(('Jour %d du confinement : ' % episode_number) +
               ('Defeat!' if reward == -5 else 'VICTORY!'))
+    if episode_number == 1000:
+        xplot = np.arange(0, len(yplot), 1)
+        plt.plot(xplot, yplot, label="running_mean")
+        plt.plot(xplot, y2plot, label="reward_sum")
+        plt.legend()
+        plt.savefig('plot.png')
+        sys.exit()
