@@ -26,7 +26,7 @@ from keras.optimizers import Adam, Adamax, RMSprop
 
 # Script Parameters
 input_dim = 80 * 80
-gamma = 0.9
+gamma = 0.94
 update_frequency = 2
 learning_rate = 0.002
 epsilon = 1
@@ -94,7 +94,7 @@ def learning_model(input_dim=80 * 80, model_type=1):
         opt = Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=opt)
     if resume == True:
-        model.load_weights('space_model_checkpoint.h5')
+        model.load_weights('space_model_checkpoint' + str(gamma) + 'h5')
         f = open("epsilon.txt", "r")
         epsilon = float(f.read())
         f.close()
@@ -177,15 +177,15 @@ while True:
             train_y = []
             probs = []
             # Save a checkpoint of the model
-            os.remove('space_model_checkpoint.h5') if os.path.exists('space_model_checkpoint.h5') else None
-            model.save_weights('space_model_checkpoint.h5')
+            os.remove('space_model_checkpoint' + str(gamma) + '.h5') if os.path.exists('space_model_checkpoint' + str(gamma) + '.h5') else None
+            model.save_weights('space_model_checkpoint' + str(gamma) + '.h5')
         # Reset the current environment nad print the current results
         running_reward = reward_sum if running_reward is None else running_reward * gamma + reward_sum * (1 - gamma)
         yplot.append(running_reward)
         y2plot.append(reward_sum)
 
 
-        print('Environment reset imminent. Total Episode Reward: %f. Running Mean: %f' % (reward_sum, running_reward))
+        print('Environment reset imminent. Total Episode Reward: %f. Running Mean: %f with gamma = %f' % (reward_sum, running_reward,gamma))
         reward_sum = 0
         observation = env.reset()
         prev_x = None
@@ -209,7 +209,7 @@ while True:
         ax2.plot(xplot, y3plot, color="blue")
         ax2.set_ylabel("epsilon", color="blue", fontsize=14)
         # save the plot as a file
-        fig.savefig('runnning_mean'+str(gamma)+ '.jpg',
+        fig.savefig('running_mean'+str(gamma)+ '.jpg',
                     format='jpeg',
                     dpi=100,
                     bbox_inches='tight')
