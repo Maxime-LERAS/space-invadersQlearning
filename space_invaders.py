@@ -27,7 +27,7 @@ from keras.optimizers import Adam, Adamax, RMSprop
 # Script Parameters
 input_dim = 80 * 80
 gamma = 0.97
-update_frequency = 3
+update_frequency = 1
 learning_rate = 0.005
 epsilon = 1
 resume = False
@@ -49,13 +49,15 @@ nb_kills = 0
 train_X = []
 train_y = []
 
+yplot = []
+
 
 def space_preprocess_screen(I):
     I = I[34:194, 40:120]
     I = I[::2, ::1, 0]
     I[I == 144] = 0
     I[I == 109] = 0
-    I[I != 0] = 1
+    I[I != 0] = 255
     # imageio.imwrite('outfile.png', I)
     return I.astype(np.float).ravel()
 
@@ -82,11 +84,11 @@ def learning_model(input_dim=80 * 80, model_type=1):
         opt = RMSprop(lr=learning_rate)
     else:
         model.add(Reshape((1, 80, 80), input_shape=(input_dim,)))
-        model.add(Convolution2D(32, 9, 9, subsample=(4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Convolution2D(32, (8, 8), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Convolution2D(64, (4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Convolution2D(64, (3, 3), border_mode='same', activation='relu', init='he_uniform'))
         model.add(Flatten())
-        model.add(Dense(16, activation='relu', init='he_uniform'))
-        model.add(Dense(24, activation='relu', init='he_uniform'))
-        model.add(Dense(16, activation='relu', init='he_uniform'))
+        model.add(Dense(512, activation='relu', init='he_uniform'))
         model.add(Dense(number_of_inputs, activation='softmax'))
         opt = Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=opt)
@@ -134,16 +136,9 @@ while True:
     if last_info == -1:
         last_info = info['ale.lives']
     if last_info > info['ale.lives']:
-        reward = -100
         last_info = info['ale.lives']
         print("dead" + str(info['ale.lives']))
-    if reward >= 1:
-        reward = 15
-    if reward == 15:
-        nb_kills += 1
-        # print(nb_kills)
-        if nb_kills%5==0:
-            reward += int(nb_kills/2)
+
     reward_sum += reward
     drs.append(reward)
     if done:
@@ -176,7 +171,6 @@ while True:
                 f = open("epsilon.txt", "w")
                 f.write(str(epsilon))
                 f.close()
-
             # Clear the batch
             train_X = []
             train_y = []
@@ -186,6 +180,10 @@ while True:
             model.save_weights('space_model_checkpoint.h5')
         # Reset the current environment nad print the current results
         running_reward = reward_sum if running_reward is None else running_reward * gamma + reward_sum * (1 - gamma)
+        yplot.append(running_reward)
+        xplot = np.arange(0, len(yplot), 1)
+        plt.plot(xplot, yplot)
+        plt.savefig('running_mean_plot.png')
         print('Environment reset imminent. Total Episode Reward: %f. Running Mean: %f' % (reward_sum, running_reward))
         reward_sum = 0
         observation = env.reset()
