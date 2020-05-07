@@ -26,7 +26,7 @@ from keras.optimizers import Adam, Adamax, RMSprop
 
 # Script Parameters
 input_dim = 80 * 80
-gamma = 0.94
+gamma = 0.5
 update_frequency = 2
 learning_rate = 0.002
 epsilon = 1

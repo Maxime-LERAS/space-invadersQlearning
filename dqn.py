@@ -5,6 +5,7 @@
 import random
 import gym
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import deque
 from keras.models import Sequential
 from keras.layers import Input, Dense, Reshape
@@ -22,8 +23,8 @@ class DQNAgent:
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_min = 0.1
+        self.epsilon_decay = 0.0002
         self.learning_rate = 0.001
         self.model = self._build_model()
 
@@ -31,8 +32,7 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(Reshape((1, 80, 80), input_shape=(80*80,)))
-        model.add(Convolution2D(32, (8, 8), border_mode='same', activation='relu', init='he_uniform'))
-        model.add(Convolution2D(64, (4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Convolution2D(32, 9, 9, subsample=(4, 4), border_mode='same', activation='relu', init='he_uniform'))
         model.add(Flatten())
         model.add(Dense(128, activation='relu', init='he_uniform'))
         model.add(Dense(self.action_size, activation='softmax'))
@@ -60,7 +60,7 @@ class DQNAgent:
             target_f[0][action] = target
             self.model.fit(state.reshape([1, state.shape[0]]), target_f, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+            self.epsilon -= self.epsilon_decay
 
     def load(self, name):
         self.model.load_weights(name)
@@ -91,8 +91,13 @@ if __name__ == "__main__":
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
     done = False
-    batch_size = 8
+    batch_size = 32
 
+    plotRewardMean = []
+    plotEpsilon = []
+    plotTotalReward = []
+
+    rewardMean = 0
     for e in range(EPISODES):
         state = env.reset()
         # print(state)
@@ -100,6 +105,7 @@ if __name__ == "__main__":
         # print(state)
         # state = np.reshape(state, [1, state_size])
         total_reward = 0
+
         while not done:
             env.render()
             action = agent.act(state)
@@ -116,6 +122,52 @@ if __name__ == "__main__":
                 break
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
+        plotEpsilon.append(agent.epsilon)
+        plotTotalReward.append(total_reward)
+        plotRewardMean.append(np.mean(plotTotalReward))
+
         done = False
-        # if e % 10 == 0:
-        #     agent.save("./save/cartpole-dqn.h5")
+        if e % 1 == 0:
+            agent.save("spacemodel"+str(agent.gamma)+".h5")
+            xplot = np.arange(0, len(plotTotalReward), 1)
+            # create figure and axis objects with subplots()
+            fig, ax = plt.subplots()
+            # make a plot
+            ax.plot(xplot, plotRewardMean, color="red")
+            # set x-axis label
+            ax.set_xlabel("episodes", fontsize=14)
+            # set y-axis label
+            ax.set_ylabel("Score mean", color="red", fontsize=14)
+            # twin object for two different y-axis on the sample plot
+            ax2 = ax.twinx()
+            # make a plot with different y-axis using second axis object
+            ax2.plot(xplot, plotEpsilon, color="blue")
+            ax2.set_ylabel("epsilon", color="blue", fontsize=14)
+            # save the plot as a file
+            fig.savefig('meanScore' + str(agent.gamma) + '.jpg',
+                        format='jpeg',
+                        dpi=100,
+                        bbox_inches='tight')
+            plt.close()
+
+            # plt.plot(xplot, yplot, label="running_mean")
+            # plt.legend()
+            # plt.savefig('mean' + str(gamma) + '.png')
+            fig, ax = plt.subplots()
+            # make a plot
+            ax.plot(xplot, plotTotalReward, color="red")
+            # set x-axis label
+            ax.set_xlabel("episodes", fontsize=14)
+            # set y-axis label
+            ax.set_ylabel("Score", color="red", fontsize=14)
+            # twin object for two different y-axis on the sample plot
+            ax2 = ax.twinx()
+            # make a plot with different y-axis using second axis object
+            ax2.plot(xplot, plotEpsilon, color="blue")
+            ax2.set_ylabel("epsilon", color="blue", fontsize=14)
+            # save the plot as a file
+            fig.savefig('episode_score' + str(agent.gamma) + '.jpg',
+                        format='jpeg',
+                        dpi=100,
+                        bbox_inches='tight')
+            plt.close()
