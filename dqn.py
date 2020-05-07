@@ -24,17 +24,19 @@ class DQNAgent:
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.1
-        self.epsilon_decay = 0.0002
-        self.learning_rate = 0.001
+        self.epsilon_decay = 0.00003
+        self.learning_rate = 0.0005
         self.model = self._build_model()
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Reshape((1, 80, 80), input_shape=(80*80,)))
-        model.add(Convolution2D(32, 9, 9, subsample=(4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Reshape((1, 80, 80), input_shape=(80 * 80,)))
+        model.add(Convolution2D(32, 8, 8, subsample=(4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        model.add(Convolution2D(64, (4, 4), border_mode='same', activation='relu', init='he_uniform'))
+        # model.add(Convolution2D(64, 3))
         model.add(Flatten())
-        model.add(Dense(128, activation='relu', init='he_uniform'))
+        model.add(Dense(256, activation='relu', init='he_uniform'))
         model.add(Dense(self.action_size, activation='softmax'))
         opt = Adam(lr=self.learning_rate)
         model.compile(loss='categorical_crossentropy', optimizer=opt)
@@ -91,7 +93,7 @@ if __name__ == "__main__":
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-dqn.h5")
     done = False
-    batch_size = 32
+    batch_size = 4
 
     plotRewardMean = []
     plotEpsilon = []
@@ -105,30 +107,37 @@ if __name__ == "__main__":
         # print(state)
         # state = np.reshape(state, [1, state_size])
         total_reward = 0
-
+        imageId = 0
         while not done:
             env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
+            if reward >= 200:
+                reward = reward - 200  # Suppression du bonus (Les bonus ne sont même pas affichés dans la fenêtre)
             total_reward += reward
             # print(next_state)
             next_state = space_preprocess_screen(next_state)
             # next_state = np.reshape(next_state, [1, state_size])
-            agent.memorize(state, action, reward, next_state, done)
+            if imageId % 4 == 0:
+                # Frame skipping : taking 1 frame over 4
+                # https://danieltakeshi.github.io/2016/11/25/frame-skipping-and-preprocessing-for-deep-q-networks-on-atari-2600-games/
+                agent.memorize(state, action, reward, next_state, done)
             state = next_state
+            imageId +=1
             if done:
                 print("episode: {}/{}, score: {}, e: {:.2}"
                       .format(e, EPISODES, total_reward, agent.epsilon))
                 break
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
+        rewardMean = rewardMean * agent.gamma + total_reward * (1 - agent.gamma)
         plotEpsilon.append(agent.epsilon)
         plotTotalReward.append(total_reward)
-        plotRewardMean.append(np.mean(plotTotalReward))
+        plotRewardMean.append(rewardMean)
 
         done = False
         if e % 3 == 0:
-            agent.save("spacemodel"+str(agent.gamma)+".h5")
+            agent.save("spacemodel" + str(agent.gamma) + ".h5")
             xplot = np.arange(0, len(plotTotalReward), 1)
             # create figure and axis objects with subplots()
             fig, ax = plt.subplots()
