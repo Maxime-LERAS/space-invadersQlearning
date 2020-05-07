@@ -127,7 +127,7 @@ if __name__ == "__main__":
         plotRewardMean.append(np.mean(plotTotalReward))
 
         done = False
-        if e % 1 == 0:
+        if e % 3 == 0:
             agent.save("spacemodel"+str(agent.gamma)+".h5")
             xplot = np.arange(0, len(plotTotalReward), 1)
             # create figure and axis objects with subplots()
