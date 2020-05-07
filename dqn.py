@@ -18,11 +18,11 @@ EPISODES = 80
 
 
 class DQNAgent:
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, gamma=0.94):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=2000)
-        self.gamma = 0.95  # discount rate
+        self.memory = deque(maxlen=8)
+        self.gamma = gamma  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.1
         self.epsilon_decay = 0.00003
@@ -74,6 +74,18 @@ class DQNAgent:
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser(description="Train and test different networks on Space Invaders")
+
+    # Parse arguments
+    parser.add_argument("-g", "--gamma", type=float, action='store',
+                        help="Specify the gamma value, between 0 and 1", required=False)
+
+    args = parser.parse_args()
+    print(args)
+
+    gamma = args.gamma
+
+
     def space_preprocess_screen(I):
         I = I[34:194, 40:120]
         I = I[::2, ::1, 0]
@@ -91,7 +103,11 @@ if __name__ == "__main__":
     # state_size = np.reshape(state_size, [1, state_size])
     # print(space_preprocess_screen(env.observation_space))
     action_size = env.action_space.n
-    agent = DQNAgent(state_size, action_size)
+    agent = None
+    if gamma is None:
+        agent = DQNAgent(state_size, action_size)
+    else:
+        agent = DQNAgent(state_size, action_size, gamma)
     # agent.load("./save/cartpole-dqn.h5")
     done = False
     batch_size = 4
@@ -126,8 +142,8 @@ if __name__ == "__main__":
             state = next_state
             imageId += 1
             if done:
-                print("episode: {}/{}, score: {}, e: {:.2}"
-                      .format(e, EPISODES, total_reward, agent.epsilon))
+                print("episode: {}/{}, score: {}, e: {:.2}, gamma: {}"
+                      .format(e, EPISODES, total_reward, agent.epsilon, agent.gamma))
                 break
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
