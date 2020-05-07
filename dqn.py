@@ -4,6 +4,7 @@
 # https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5
 import random
 import gym
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import deque
@@ -13,7 +14,7 @@ from keras.layers.convolutional import UpSampling2D, Convolution2D
 from keras.layers.core import Activation, Dropout, Flatten
 from keras.optimizers import Adam
 
-EPISODES = 1000
+EPISODES = 80
 
 
 class DQNAgent:
@@ -99,7 +100,7 @@ if __name__ == "__main__":
     plotEpsilon = []
     plotTotalReward = []
 
-    rewardMean = 0
+    shiftingRewardMean = deque(maxlen=15)
     for e in range(EPISODES):
         state = env.reset()
         # print(state)
@@ -123,20 +124,20 @@ if __name__ == "__main__":
                 # https://danieltakeshi.github.io/2016/11/25/frame-skipping-and-preprocessing-for-deep-q-networks-on-atari-2600-games/
                 agent.memorize(state, action, reward, next_state, done)
             state = next_state
-            imageId +=1
+            imageId += 1
             if done:
                 print("episode: {}/{}, score: {}, e: {:.2}"
                       .format(e, EPISODES, total_reward, agent.epsilon))
                 break
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
-        rewardMean = rewardMean * agent.gamma + total_reward * (1 - agent.gamma)
         plotEpsilon.append(agent.epsilon)
         plotTotalReward.append(total_reward)
-        plotRewardMean.append(rewardMean)
+        shiftingRewardMean.append(total_reward)
+        plotRewardMean.append(np.mean(shiftingRewardMean))
 
         done = False
-        if e % 3 == 0:
+        if e % 2 == 0:
             agent.save("spacemodel" + str(agent.gamma) + ".h5")
             xplot = np.arange(0, len(plotTotalReward), 1)
             # create figure and axis objects with subplots()
