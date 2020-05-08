@@ -9,7 +9,7 @@
 
 \begin{document}
 
-    \title{Rapport Q-Learning Space Invaders \\ G1I0M3 \\ Étude de l'impact de gamma sur les résultats}
+    \title{Rapport Q-Learning Space Invaders \\ \vspace*{3mm}G1 I0 M3 \large  \vspace*{7mm}\\ Étude de l'impact de $\gamma$ sur les résultats}
 
     \author{Julien Molinier, Maxime Leras}
     \date{7 Mai 2020}
@@ -92,6 +92,7 @@
 
     \section{Etude du paramètre $\gamma$}
     \newpage
+
     \subsection{Evolution du score moyen}
     \begin{figure}[hbt!]
         \centering
@@ -124,7 +125,15 @@
         \caption{Moyennes en fonction de $\gamma$}
     \end{figure}
 
+    \paragraph{}
+    Les graphiques ci-dessus montrent qu'un $\gamma$ trop proche de 1 a tendance à faire diverger la
+    valeur de $\mathrm{Q}$ et donc le score moyen diminue plus le nombre d'épisode augmente car les valeurs sont lisées
+    par l'effet de la loi des grands nombres. Un gamma trop petit (et donc de plus en plus proche de 0)
+    rend l'agent myope aux récompenses courantes et donc les résultats sont tout aussi instables. D'après la figure 2,
+    les courbes les moins bruitées et traduisant une forme d'apprentissage efficace sont celles où
+    $0.8 \leq \gamma \leq 0.95$.
     \newpage
+
     \subsection{Evolution du score par partie}
     \begin{figure}[hbt!]
         \centering
@@ -177,8 +186,21 @@
     \paragraph{}
     La figure ci-dessus montre clairement une perte d'information lors des épisodes qui suivent la 40ème itération.
     De plus on peut observer que la 40ème étape correspond au moment où $\epsilon$ attend sa valeur la plus basse
-    avec 10\% de change qu'une actions soit liée au hasard.
+    avec 10\% de chance qu'une action soit liée au hasard.
+
+    \paragraph{}
+    Des solutions ont pu être développé pour limiter ce phénomène avec les avancées de la neuroscience. La première
+    est l'algorithme EWC (Elastic Weight Consolidation) developpé par la société DeepMind\footnote{\url{https://deepmind.com/}}.
+    La seconde est fondée sur le fonctionnement du cerveau humain avec des zones pour l'apprentissage rapide, et
+    d'autres pour le plus long terme. Ainsi en utilisant 2 ANN comme avec les DDQN (Double Deep Q-Learning)
+    le phénomène tend à disparaitre.
 
 
     \section{Conclusion}
+
+    \paragraph{}
+    Pour résumer il est important de choisir une bonne valeur de $\gamma$ afin de tenir compte des récompenses courantes
+    mais aussi plus anciennes. Malgré le phénomène d'oubli catastrophique l'algorithme de Deep Q-learning parvient tout de même
+    à trouver quelques "bonnes" stratégies comme rester proche d'un coin afin de limiter les chances de prendre un projectile.
+
 \end{document}
