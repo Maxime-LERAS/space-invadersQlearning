@@ -66,9 +66,10 @@
     Un bonus violet apparaît parfois au dessus des aliens et donne 200 s'il est touché.
 
     Nous avions pensé ajouter une récompense négative dans le cas d'une vie perdue afin de peut-être
-    permettre un lien entre les tirs des aliens et le fait de perdre. Nous pensions aussi lisser les
-    récompenses notamment le bonus qui est très rare et crée des fortes croissances dans les scores sans que
-    le lien \textit{action/reward} ne puisse être fait.
+    permettre un lien entre les tirs des aliens et le fait de perdre. Nous avons fait le choix de lisser les
+    récompenses en supprimant le bonus qui est très rare et crée des fortes croissances dans les scores sans que
+    le lien \textit{action/reward} ne puisse être fait. Ce choix s'accompagne de la suppression sur l'image
+    après traitement de la zone où ces bonus apparaissent (voir Traitement des données)
 
     \newpage
 
@@ -76,18 +77,20 @@
 
     \paragraph{}
     La donnée en entrée est une image de 210 par 160 (160 pixels en horizontal et 210 en vertical)
-    en couleur. Afin de réduire cette entrée, nous avons réduit la taille de cette image.
-    l'image au strict nécessaire de 80x80 pixels en noir et blanc. Nous avons fait le choix
+    en couleur. Afin de réduire cette entrée, nous avons réduit la taille de cette image au strict nécessaire sans la
+    partie haute où le score est affiché et où les bonus apparaissent.
+    Une image de 80x80 pixels en noir et blanc. Nous avons fait le choix
     de ne garder qu'un seul pixel sur 2 en vertical car aucun déplacement vertical n'est possible et
     les tirs d'aliens restent visibles car bien plus longs que 2 pixels (voir Figure 1). Pour les pixels en abscisse,
-    nous avons du garder la totalité des pixels et non pas un sur deux car les tirs
-    ne font qu'un pixel de large et pourraient être totalement invisible s'ils sont sur un pixel impair.
+    nous avons gardé la totalité des pixels et non pas un sur deux car les tirs
+    ne font qu'un pixel de large et pourraient être totalement invisibles s'ils sont sur un pixel impair.
 
     \begin{figure}[h]
         \centering
         \includegraphics[width=0.5\textwidth] {./processed_image.png}
         \caption{Image après traitement}
     \end{figure}
+
 
 
     \section{Etude du paramètre $\gamma$}
@@ -127,7 +130,7 @@
 
     \paragraph{}
     Les graphiques ci-dessus montrent qu'un $\gamma$ trop proche de 1 a tendance à faire diverger la
-    valeur de $\mathrm{Q}$ et donc le score moyen diminue plus le nombre d'épisode augmente car les valeurs sont lisées
+    valeur de $\mathrm{Q}$ et donc le score moyen diminue plus le nombre d'épisode augmente car les valeurs sont lissées
     par l'effet de la loi des grands nombres. Un gamma trop petit (et donc de plus en plus proche de 0)
     rend l'agent myope aux récompenses courantes et donc les résultats sont tout aussi instables. D'après la figure 2,
     les courbes les moins bruitées et traduisant une forme d'apprentissage efficace sont celles où
@@ -185,14 +188,14 @@
 
     \paragraph{}
     La figure ci-dessus montre clairement une perte d'information lors des épisodes qui suivent la 40ème itération.
-    De plus on peut observer que la 40ème étape correspond au moment où $\epsilon$ attend sa valeur la plus basse
+    De plus on peut observer que la 40ème étape correspond au moment où $\epsilon$ atteint sa valeur la plus basse
     avec 10\% de chance qu'une action soit liée au hasard.
 
     \paragraph{}
     Des solutions ont pu être développé pour limiter ce phénomène avec les avancées de la neuroscience. La première
     est l'algorithme EWC (Elastic Weight Consolidation) developpé par la société DeepMind\footnote{\url{https://deepmind.com/}}.
     La seconde est fondée sur le fonctionnement du cerveau humain avec des zones pour l'apprentissage rapide, et
-    d'autres pour le plus long terme. Ainsi en utilisant 2 ANN comme avec les DDQN (Double Deep Q-Learning)
+    d'autres pour le plus long terme. Ainsi en utilisant 2 ANN comme avec les DDQN (Double Deep Q Network)
     le phénomène tend à disparaitre.
 
 
