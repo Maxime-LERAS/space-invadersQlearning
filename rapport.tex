@@ -92,7 +92,6 @@
     \end{figure}
 
 
-
     \section{Etude du paramètre $\gamma$}
     \newpage
 
@@ -126,6 +125,7 @@
             \includegraphics[width=0.3\textwidth] {./meanScore0.1.jpg}
         }
         \caption{Moyennes en fonction de $\gamma$}
+        \label{scoremoyen}
     \end{figure}
 
     \paragraph{}
@@ -169,6 +169,10 @@
         \caption{Score en fonction de $\gamma$ (suite)}
     \end{figure}
 
+    \paragraph{}
+    Malgré une trace d'apprentissage visible sur certains des graphiques de la figure~\ref{scoremoyen} on constate que les scores par partie
+    reste très peu stable. On ne peut voir de convergence vers un score maximum ou de simple augmentation du score au cours
+    des épisodes.
     \newpage
 
     \subsection{Phénomène d'oubli catastrophique}
