@@ -74,9 +74,9 @@ class DQNAgent:
 
 if __name__ == "__main__":
 
+    # Parser source : https://github.com/yilundu/DQN-DDQN-on-Space-Invaders/blob/master/main.py
     parser = argparse.ArgumentParser(description="Train and test different networks on Space Invaders")
 
-    # Parse arguments
     parser.add_argument("-g", "--gamma", type=float, action='store',
                         help="Specify the gamma value, between 0 and 1", required=False)
 
@@ -98,43 +98,34 @@ if __name__ == "__main__":
 
     env = gym.make('SpaceInvaders-v0')
     state_size = env.observation_space.shape[0]
-    # print(env.observation_space)
-    # print(state_size)
-    # state_size = np.reshape(state_size, [1, state_size])
-    # print(space_preprocess_screen(env.observation_space))
     action_size = env.action_space.n
     agent = None
     if gamma is None:
         agent = DQNAgent(state_size, action_size)
     else:
         agent = DQNAgent(state_size, action_size, gamma)
-    # agent.load("./save/cartpole-dqn.h5")
+    # agent.load("./spacemodel.h5")
     done = False
     batch_size = 4
 
     plotRewardMean = []
     plotEpsilon = []
     plotTotalReward = []
-
+    rewardMean = 0
     shiftingRewardMean = deque(maxlen=15)
     for e in range(EPISODES):
         state = env.reset()
-        # print(state)
         state = space_preprocess_screen(state)
-        # print(state)
-        # state = np.reshape(state, [1, state_size])
         total_reward = 0
         imageId = 0
         while not done:
-            env.render()
+            # env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
             if reward >= 200:
                 reward = reward - 200  # Suppression du bonus (Les bonus ne sont même pas affichés dans la fenêtre)
             total_reward += reward
-            # print(next_state)
             next_state = space_preprocess_screen(next_state)
-            # next_state = np.reshape(next_state, [1, state_size])
             if imageId % 4 == 0:
                 # Frame skipping : taking 1 frame over 4
                 # https://danieltakeshi.github.io/2016/11/25/frame-skipping-and-preprocessing-for-deep-q-networks-on-atari-2600-games/
@@ -147,52 +138,42 @@ if __name__ == "__main__":
                 break
             if len(agent.memory) > batch_size:
                 agent.replay(batch_size)
+        if rewardMean == 0:
+            rewardMean = total_reward
+        rewardMean = 0.95 * rewardMean + 0.05 * total_reward
         plotEpsilon.append(agent.epsilon)
         plotTotalReward.append(total_reward)
         shiftingRewardMean.append(total_reward)
-        plotRewardMean.append(np.mean(shiftingRewardMean))
+        plotRewardMean.append(rewardMean)
 
         done = False
         if e % 2 == 0:
-            agent.save("spacemodel" + str(agent.gamma) + ".h5")
+            agent.save("./lastresults/spacemodel" + str(agent.gamma) + ".h5")
+
+
+            # sources : https://cmdlinetips.com/2019/10/how-to-make-a-plot-with-two-different-y-axis-in-python-with-matplotlib/
             xplot = np.arange(0, len(plotTotalReward), 1)
-            # create figure and axis objects with subplots()
             fig, ax = plt.subplots()
-            # make a plot
             ax.plot(xplot, plotRewardMean, color="red")
-            # set x-axis label
             ax.set_xlabel("episodes", fontsize=14)
-            # set y-axis label
             ax.set_ylabel("Score mean", color="red", fontsize=14)
-            # twin object for two different y-axis on the sample plot
             ax2 = ax.twinx()
-            # make a plot with different y-axis using second axis object
             ax2.plot(xplot, plotEpsilon, color="blue")
             ax2.set_ylabel("epsilon", color="blue", fontsize=14)
-            # save the plot as a file
-            fig.savefig('meanScore' + str(agent.gamma) + '.jpg',
+            fig.savefig('./lastresults/meanScore' + str(agent.gamma) + '.jpg',
                         format='jpeg',
                         dpi=100,
                         bbox_inches='tight')
             plt.close()
 
-            # plt.plot(xplot, yplot, label="running_mean")
-            # plt.legend()
-            # plt.savefig('mean' + str(gamma) + '.png')
             fig, ax = plt.subplots()
-            # make a plot
             ax.plot(xplot, plotTotalReward, color="red")
-            # set x-axis label
             ax.set_xlabel("episodes", fontsize=14)
-            # set y-axis label
             ax.set_ylabel("Score", color="red", fontsize=14)
-            # twin object for two different y-axis on the sample plot
             ax2 = ax.twinx()
-            # make a plot with different y-axis using second axis object
             ax2.plot(xplot, plotEpsilon, color="blue")
             ax2.set_ylabel("epsilon", color="blue", fontsize=14)
-            # save the plot as a file
-            fig.savefig('episode_score' + str(agent.gamma) + '.jpg',
+            fig.savefig('./lastresults/episode_score' + str(agent.gamma) + '.jpg',
                         format='jpeg',
                         dpi=100,
                         bbox_inches='tight')

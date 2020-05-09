@@ -3,7 +3,7 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{fancyhdr}
-\usepackage{hyperref}
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage{subfloat}
 \usepackage{subfig}
 
@@ -37,7 +37,7 @@
     est simple : détruire des vagues d'aliens se déplaçant horizontalement
     grâce à des tirs.
     Le Q-Learning est une technique d'apprentissage automatique
-    interéssante pour ce type de jeu car elle ne nécessite aucun modèle
+    intéressante pour ce type de jeu car elle ne nécessite aucun modèle
     initial de l'environnement.
 
     \paragraph{}
@@ -63,7 +63,7 @@
     \paragraph{}
     Les récompenses par défaut pour \textit{SpaceInvaders-v0} sont uniquement positives.
     Elles sont de 5 pour les aliens de la ligne la plus proche du bas et augmentent de 5 par ligne.
-    Un bonus violet apparaît parfois au dessus des aliens et donne 200 s'il est touché.
+    Un bonus violet apparaît parfois au-dessus des aliens et donne 200 s'il est touché.
 
     Nous avions pensé ajouter une récompense négative dans le cas d'une vie perdue afin de peut-être
     permettre un lien entre les tirs des aliens et le fait de perdre. Nous avons fait le choix de lisser les
@@ -95,6 +95,22 @@
 
     \section{Etude du paramètre $\gamma$}
     \newpage
+
+    \subsection{Hyperparamètres choisis}
+    \paragraph{}
+    Afin d'étudier l'impact de $\gamma$ sur les résultats, nous avons défini tous les autres hyperparamètres
+    de façon à ce que seul $\gamma$ change d'un lancement de l'apprentissage à un autre.
+
+    Nous avons donc choisi un \textit{learning rate} de 0.0005 pour tous nos lancements.
+    $\epsilon$ quant à lui décroît de façon linéaire pour chaque \textit{training}. Ces entrainements
+    du réseau de neurones n'ayant lieu que toutes les \textit{batch\_size} images, la décroissance
+    de $\epsilon$ n'est pas linéaire par rapport au nombre de parties (on peut le voir sur les graphiques)
+    mais est linéaire par rapport au nombre d'images traitées. De ce fait une partie courte fera moins
+    évoluer $\epsilon$ qu'une partie longue. Le \textit{batch\_size} choisi est de 4 images. Cependant,
+    nous avons ajouté une logique de \textit{frame skipping} qui ne mémorise qu'une image sur 4 pour l'entrainement.
+    Une mise à jour de la valeur de Q et du réseau de neurones a donc lieu toutes les 16 images entraînant au passage
+    une mise à jour de $\epsilon$.
+
 
     \subsection{Evolution du score moyen}
     \begin{figure}[hbt!]
@@ -128,9 +144,11 @@
         \caption{Moyennes en fonction de $\gamma$}
     \end{figure}
 
+    
+
     \paragraph{}
     Les graphiques ci-dessus montrent qu'un $\gamma$ trop proche de 1 a tendance à faire diverger la
-    valeur de $\mathrm{Q}$ et donc le score moyen diminue plus le nombre d'épisode augmente car les valeurs sont lissées
+    valeur de $\mathrm{Q}$ et donc le score moyen diminue plus le nombre d'épisodes augmente car les valeurs sont lissées
     par l'effet de la loi des grands nombres. Un gamma trop petit (et donc de plus en plus proche de 0)
     rend l'agent myope en n'utilisant que les récompenses courantes et donc les résultats sont tout aussi instables. D'après la figure 2,
     les courbes les moins bruitées et traduisant une forme d'apprentissage efficace sont celles où
@@ -168,13 +186,12 @@
         }
         \caption{Score en fonction de $\gamma$ (suite)}
     \end{figure}
-
     \newpage
 
     \subsection{Phénomène d'oubli catastrophique}
 
     \paragraph{}
-    L'oubli catastrophique est un phénomène problématique des réseaux de neuronnes artificiels (ANN).
+    L'oubli catastrophique est un phénomène problématique des réseaux de neurones artificiels (ANN).
     \textit{Lors d’un nouvel apprentissage, un réseau
     de neurones artificiels modifie ses poids synaptiques en fonction
     de la nouvelle information et perd l’information précédemment
@@ -192,8 +209,8 @@
     avec 10\% de chance qu'une action soit liée au hasard.
 
     \paragraph{}
-    Des solutions ont pu être développé pour limiter ce phénomène avec les avancées de la neuroscience. La première
-    est l'algorithme EWC (Elastic Weight Consolidation) developpé par la société DeepMind\footnote{\url{https://deepmind.com/}}.
+    Des solutions ont pu être développées pour limiter ce phénomène avec les avancées de la neuroscience. La première
+    est l'algorithme EWC (Elastic Weight Consolidation) développé par la société DeepMind\footnote{\url{https://deepmind.com/}}.
     La seconde est fondée sur le fonctionnement du cerveau humain avec des zones pour l'apprentissage rapide, et
     d'autres pour le plus long terme. Ainsi en utilisant 2 ANN comme avec les DDQN (Double Deep Q Network)
     le phénomène tend à disparaitre.
@@ -205,5 +222,32 @@
     Pour résumer il est important de choisir une bonne valeur de $\gamma$ afin de tenir compte des récompenses courantes
     mais aussi plus anciennes. Malgré le phénomène d'oubli catastrophique l'algorithme de Deep Q-learning parvient tout de même
     à trouver quelques "bonnes" stratégies comme rester proche d'un coin afin de limiter les chances de prendre un projectile.
+
+
+    \newpage
+    \section{Sources}
+    \paragraph{}
+    Pour la réalisation de ce projet nous n'avons pas implémenté nous même le DQN et nous sommes inspiré
+    de plusieurs sources.
+
+    \paragraph{DQN d'origine}
+    \paragraph{}
+    \url{https://github.com/keon/deep-q-learning/blob/master/dqn.py}
+
+    \paragraph{}
+    \paragraph{Preprocessing de l'input} 
+    \paragraph{}
+    \url{https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5}
+
+    \paragraph{}
+    \paragraph{Graphiques à 2 axes en ordonnées}
+    \paragraph{}
+    \url{https://cmdlinetips.com/2019/10/how-to-make-a-plot-with-two-different-y-axis-in-python-with-matplotlib/}
+    \paragraph{}
+
+    \paragraph{Parser d'arguments}
+    \paragraph{}
+    \url{https://github.com/yilundu/DQN-DDQN-on-Space-Invaders/blob/master/main.py}
+
 
 \end{document}
