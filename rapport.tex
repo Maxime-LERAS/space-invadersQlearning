@@ -92,7 +92,6 @@
     \end{figure}
 
 
-
     \section{Etude du paramètre $\gamma$}
     \newpage
 
@@ -142,9 +141,10 @@
             \includegraphics[width=0.3\textwidth] {./meanScore0.1.jpg}
         }
         \caption{Moyennes en fonction de $\gamma$}
+        \label{scoremoyen}
     \end{figure}
 
-    
+
 
     \paragraph{}
     Les graphiques ci-dessus montrent qu'un $\gamma$ trop proche de 1 a tendance à faire diverger la
@@ -186,6 +186,11 @@
         }
         \caption{Score en fonction de $\gamma$ (suite)}
     \end{figure}
+
+    \paragraph{}
+    Malgré une trace d'apprentissage visible sur certains des graphiques de la figure~\ref{scoremoyen} on constate que les scores par partie
+    reste très peu stable. On ne peut voir de convergence vers un score maximum ou de simple augmentation du score au cours
+    des épisodes.
     \newpage
 
     \subsection{Phénomène d'oubli catastrophique}
@@ -235,7 +240,7 @@
     \url{https://github.com/keon/deep-q-learning/blob/master/dqn.py}
 
     \paragraph{}
-    \paragraph{Preprocessing de l'input} 
+    \paragraph{Preprocessing de l'input}
     \paragraph{}
     \url{https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5}
 
